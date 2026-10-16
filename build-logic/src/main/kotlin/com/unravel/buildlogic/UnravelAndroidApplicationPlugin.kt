@@ -14,11 +14,10 @@ class UnravelAndroidApplicationPlugin : Plugin<Project> {
     override fun apply(target: Project) = with(target) {
         with(pluginManager) {
             apply("com.android.application")
-            apply("org.jetbrains.kotlin.android")
         }
 
         extensions.configure<ApplicationExtension> {
-            compileSdk = 36
+            compileSdk = 37
 
             defaultConfig {
                 applicationId = "com.unravel.app"
@@ -58,9 +57,6 @@ class UnravelAndroidApplicationPlugin : Plugin<Project> {
 
         extensions.configure<KotlinAndroidProjectExtension> {
             jvmToolchain(21)
-            compilerOptions {
-                freeCompilerArgs.addAll("-Xcontext-parameters")
-            }
         }
 
         dependencies {

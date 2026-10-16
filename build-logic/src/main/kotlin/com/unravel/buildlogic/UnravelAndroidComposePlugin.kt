@@ -1,10 +1,11 @@
 package com.unravel.buildlogic
 
-import com.android.build.api.dsl.CommonExtension
+import com.android.build.api.dsl.ApplicationExtension
+import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.getByType
 import org.jetbrains.kotlin.compose.compiler.gradle.ComposeCompilerGradlePluginExtension
 
 class UnravelAndroidComposePlugin : Plugin<Project> {
@@ -13,10 +14,18 @@ class UnravelAndroidComposePlugin : Plugin<Project> {
             apply("org.jetbrains.kotlin.plugin.compose")
         }
 
-        val androidExtension = extensions.getByType(CommonExtension::class.java)
-        androidExtension.apply {
-            buildFeatures {
-                compose = true
+        pluginManager.withPlugin("com.android.library") {
+            extensions.configure<com.android.build.api.dsl.LibraryExtension> {
+                buildFeatures {
+                    compose = true
+                }
+            }
+        }
+        pluginManager.withPlugin("com.android.application") {
+            extensions.configure<com.android.build.api.dsl.ApplicationExtension> {
+                buildFeatures {
+                    compose = true
+                }
             }
         }
 

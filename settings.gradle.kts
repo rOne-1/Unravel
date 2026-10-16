@@ -15,3 +15,14 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "Unravel"
+
+include(
+    ":app",
+    ":core:dsa-engine",
+    ":core:canvas-renderer",
+    ":core:design-system",
+    ":core:database",
+    ":feature:skill-map",
+    ":feature:sandbox",
+    ":feature:race-mode"
+)

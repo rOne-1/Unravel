@@ -23,9 +23,6 @@ class UnravelKotlinJvmPlugin : Plugin<Project> {
 
         extensions.configure<KotlinJvmProjectExtension> {
             jvmToolchain(21)
-            compilerOptions {
-                freeCompilerArgs.addAll("-Xcontext-parameters")
-            }
         }
 
         dependencies {
