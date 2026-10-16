@@ -21,22 +21,6 @@ import kotlinx.serialization.encoding.encodeStructure
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-/**
- * Serializer for [kotlin.uuid.Uuid].
- */
-@OptIn(ExperimentalUuidApi::class)
-object UuidSerializer : KSerializer<Uuid> {
-    override val descriptor: SerialDescriptor =
-        kotlinx.serialization.descriptors.PrimitiveSerialDescriptor("kotlin.uuid.Uuid", kotlinx.serialization.descriptors.PrimitiveKind.STRING)
-
-    override fun serialize(encoder: Encoder, value: Uuid) {
-        encoder.encodeString(value.toString())
-    }
-
-    override fun deserialize(decoder: Decoder): Uuid {
-        return Uuid.parse(decoder.decodeString())
-    }
-}
 
 /**
  * Generic Serializer for [ImmutableList].

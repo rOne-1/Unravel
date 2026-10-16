@@ -7,7 +7,6 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class ArrayNode(
-    @Serializable(with = UuidSerializer::class)
     val id: Uuid = Uuid.random(),
     val value: Int
 )
@@ -15,21 +14,19 @@ data class ArrayNode(
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class LinkedNode(
-    @Serializable(with = UuidSerializer::class)
     val id: Uuid = Uuid.random(),
     val value: Int,
-    val nextId: @Serializable(with = UuidSerializer::class) Uuid? = null,
-    val prevId: @Serializable(with = UuidSerializer::class) Uuid? = null
+    val nextId: Uuid? = null,
+    val prevId: Uuid? = null
 )
 
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class TreeNode(
-    @Serializable(with = UuidSerializer::class)
     val id: Uuid = Uuid.random(),
     val value: Int,
-    val leftId: @Serializable(with = UuidSerializer::class) Uuid? = null,
-    val rightId: @Serializable(with = UuidSerializer::class) Uuid? = null,
+    val leftId: Uuid? = null,
+    val rightId: Uuid? = null,
     val height: Int = 1,
     val balanceFactor: Int = 0,
     val normX: Float = 0.5f,
@@ -39,9 +36,7 @@ data class TreeNode(
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class TreeEdge(
-    @Serializable(with = UuidSerializer::class)
     val fromId: Uuid,
-    @Serializable(with = UuidSerializer::class)
     val toId: Uuid,
     val isHighlighted: Boolean = false
 )
@@ -55,7 +50,6 @@ enum class SpatialMode {
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class SpatialVertex(
-    @Serializable(with = UuidSerializer::class)
     val id: Uuid = Uuid.random(),
     val label: String = "",
     val gridRow: Int = 0,
@@ -69,9 +63,7 @@ data class SpatialVertex(
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class SpatialEdge(
-    @Serializable(with = UuidSerializer::class)
     val fromId: Uuid,
-    @Serializable(with = UuidSerializer::class)
     val toId: Uuid,
     val weight: Int = 1,
     val isDirected: Boolean = false,

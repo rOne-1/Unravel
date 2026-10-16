@@ -11,7 +11,6 @@ import kotlin.uuid.Uuid
 @OptIn(ExperimentalUuidApi::class)
 @Serializable
 data class CallStackFrame(
-    @Serializable(with = UuidSerializer::class)
     val id: Uuid = Uuid.random(),
     val functionName: String,
     val parameters: @Serializable(with = ImmutableMapSerializer::class) ImmutableMap<String, String> = persistentMapOf(),

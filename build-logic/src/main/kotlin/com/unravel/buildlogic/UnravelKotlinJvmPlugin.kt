@@ -30,6 +30,7 @@ class UnravelKotlinJvmPlugin : Plugin<Project> {
             add("testImplementation", libs.findLibrary("junit-jupiter-api").get())
             add("testImplementation", libs.findLibrary("junit-jupiter-params").get())
             add("testRuntimeOnly", libs.findLibrary("junit-jupiter-engine").get())
+            add("testRuntimeOnly", libs.findLibrary("junit-platform-launcher").get())
         }
 
         tasks.withType<Test>().configureEach {
