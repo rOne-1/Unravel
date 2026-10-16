@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Center Prism Axis Line (x = 54) -->
+    <path
+        android:pathData="M54,28 L54,76"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="1.5"
+        android:strokeLineCap="round" />
+
+    <!-- Left Tangled Ribbon 1 Silhouette -->
+    <path
+        android:pathData="M31,60 C31,46 36,36 42,36 C48,36 47,50 39,56 C35,59 37,66 43,66 C48,66 50,58 54,52"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Left Tangled Ribbon 2 Silhouette -->
+    <path
+        android:pathData="M32,42 C34,54 36,64 42,64 C47,64 49,54 43,46 C39,41 45,35 49,40 C51,43 52,48 54,52"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="3.5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Right Ordered Baseline Thread Silhouette -->
+    <path
+        android:pathData="M54,52 C56,54 57,68 60.5,68 L77,68"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round" />
+
+    <!-- Right Ordered Ascending Summit Guide Silhouette -->
+    <path
+        android:pathData="M54,52 C56,52 57,57 60.75,57 C64,57 65.75,50 65.75,50 C67.5,50 70.75,43 70.75,43 C72.5,43 75.75,36 75.75,36"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Right Ordered Ascending Bar 1 Silhouette -->
+    <path
+        android:pathData="M60.75,57 C61.7,57 62.5,57.8 62.5,58.75 L62.5,68 L59,68 L59,58.75 C59,57.8 59.8,57 60.75,57 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Right Ordered Ascending Bar 2 Silhouette -->
+    <path
+        android:pathData="M65.75,50 C66.7,50 67.5,50.8 67.5,51.75 L67.5,68 L64,68 L64,51.75 C64,50.8 64.8,50 65.75,50 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Right Ordered Ascending Bar 3 Silhouette -->
+    <path
+        android:pathData="M70.75,43 C71.7,43 72.5,43.8 72.5,44.75 L72.5,68 L69,68 L69,44.75 C69,43.8 69.8,43 70.75,43 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Right Ordered Ascending Bar 4 Silhouette -->
+    <path
+        android:pathData="M75.75,36 C76.7,36 77.5,36.8 77.5,37.75 L77.5,68 L74,68 L74,37.75 C74,36.8 74.8,36 75.75,36 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Terminal Summit Lock Node Silhouette -->
+    <path
+        android:pathData="M75.75,33.5 C77.13,33.5 78.25,34.62 78.25,36 C78.25,37.38 77.13,38.5 75.75,38.5 C74.37,38.5 73.25,37.38 73.25,36 C73.25,34.62 74.37,33.5 75.75,33.5 Z"
+        android:fillColor="#FFFFFF" />
+
+</vector>
