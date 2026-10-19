@@ -190,14 +190,12 @@ private fun AgslPrismCanvas(
         val h = size.height
 
         shader.setFloatUniform("uResolution", w, h)
-        shader.setColorUniform(
+        shader.setFloatUniform(
             "uAccentColor",
-            android.graphics.Color.valueOf(
-                accentColor.red,
-                accentColor.green,
-                accentColor.blue,
-                accentColor.alpha
-            )
+            accentColor.red,
+            accentColor.green,
+            accentColor.blue,
+            accentColor.alpha
         )
         shader.setFloatUniform("uIsVertical", if (orientation == DividerOrientation.VERTICAL) 1f else 0f)
 
