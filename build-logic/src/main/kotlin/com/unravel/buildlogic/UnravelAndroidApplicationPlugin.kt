@@ -23,8 +23,8 @@ class UnravelAndroidApplicationPlugin : Plugin<Project> {
                 applicationId = "com.unravel.app"
                 minSdk = 26
                 targetSdk = 36
-                versionCode = 1
-                versionName = "0.1.0-alpha.0"
+                versionCode = 6
+                versionName = "0.6.0-beta.0"
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             }
 
@@ -36,6 +36,7 @@ class UnravelAndroidApplicationPlugin : Plugin<Project> {
                         getDefaultProguardFile("proguard-android-optimize.txt"),
                         "proguard-rules.pro"
                     )
+                    signingConfig = signingConfigs.getByName("debug")
                 }
                 debug {
                     applicationIdSuffix = ".debug"
