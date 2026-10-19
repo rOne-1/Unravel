@@ -4,7 +4,8 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,6 +21,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.drawText
@@ -114,69 +116,69 @@ fun ArrayPointerCanvas(
         modifier = modifier
             .fillMaxSize()
             .pointerInput(itemCount) {
-                var draggedIndex = -1
-                var startValue = 0
-                var totalDragX = 0f
-                var totalDragY = 0f
-                var lastReportedValue = 0
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val draggedIndex = ArrayCanvasLayoutCalculator.calculateIndexFromX(
+                        touchX = down.position.x,
+                        itemCount = itemCount,
+                        canvasWidth = size.width.toFloat(),
+                        horizontalPadding = horizontalPaddingPx
+                    )
+                    val startValue = items.getOrNull(draggedIndex)?.value ?: 0
+                    var lastReportedValue = startValue
+                    var totalDragX = 0f
+                    var totalDragY = 0f
+                    var isDrag = false
 
-                detectDragGestures(
-                    onDragStart = { offset ->
-                        draggedIndex = ArrayCanvasLayoutCalculator.calculateIndexFromX(
-                            touchX = offset.x,
-                            itemCount = itemCount,
-                            canvasWidth = size.width.toFloat(),
-                            horizontalPadding = horizontalPaddingPx
-                        )
-                        startValue = items.getOrNull(draggedIndex)?.value ?: 0
-                        lastReportedValue = startValue
-                        totalDragX = 0f
-                        totalDragY = 0f
-                    },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull { it.id == down.id } ?: break
+                        if (change.changedToUpIgnoreConsumed()) {
+                            if (!isDrag) {
+                                if (draggedIndex in 0 until itemCount) {
+                                    onBarTap?.invoke(draggedIndex)
+                                    hapticEngine.performHaptic(HapticCue.TICK)
+                                }
+                            } else {
+                                if (abs(totalDragX) > abs(totalDragY) && abs(totalDragX) > 24f && draggedIndex in 0 until itemCount) {
+                                    val targetIndex = ArrayCanvasLayoutCalculator.calculateIndexFromX(
+                                        touchX = horizontalPaddingPx + (draggedIndex + 0.5f) * ((size.width - 2f * horizontalPaddingPx) / itemCount) + totalDragX,
+                                        itemCount = itemCount,
+                                        canvasWidth = size.width.toFloat(),
+                                        horizontalPadding = horizontalPaddingPx
+                                    )
+                                    if (targetIndex != draggedIndex && targetIndex in 0 until itemCount) {
+                                        onSwap?.invoke(draggedIndex, targetIndex)
+                                        hapticEngine.performHaptic(HapticCue.SWAP_THUD)
+                                    }
+                                }
+                            }
+                            break
+                        }
+
+                        val dragAmount = change.position - change.previousPosition
                         totalDragX += dragAmount.x
                         totalDragY += dragAmount.y
 
-                        if (abs(totalDragY) > abs(totalDragX) && abs(totalDragY) > 8f) {
-                            // Vertical drag: dynamically modify value
-                            val stepPx = 14f
-                            val deltaVal = (-totalDragY / stepPx).toInt()
-                            val newVal = (startValue + deltaVal).coerceIn(1, 99)
-                            if (newVal != lastReportedValue && draggedIndex in 0 until itemCount) {
-                                lastReportedValue = newVal
-                                onValueChange?.invoke(draggedIndex, newVal)
-                                hapticEngine.performHaptic(HapticCue.TICK)
+                        if (!isDrag && (abs(totalDragX) > 8f || abs(totalDragY) > 8f)) {
+                            isDrag = true
+                        }
+
+                        if (isDrag) {
+                            change.consume()
+                            if (abs(totalDragY) > abs(totalDragX) && abs(totalDragY) > 8f) {
+                                val stepPx = 14f
+                                val deltaVal = (-totalDragY / stepPx).toInt()
+                                val newVal = (startValue + deltaVal).coerceIn(1, 99)
+                                if (newVal != lastReportedValue && draggedIndex in 0 until itemCount) {
+                                    lastReportedValue = newVal
+                                    onValueChange?.invoke(draggedIndex, newVal)
+                                    hapticEngine.performHaptic(HapticCue.TICK)
+                                }
                             }
                         }
-                    },
-                    onDragEnd = {
-                        val dragDistanceSq = totalDragX * totalDragX + totalDragY * totalDragY
-                        if (dragDistanceSq < 64f) {
-                            // Minimal movement -> Tap
-                            if (draggedIndex in 0 until itemCount) {
-                                onBarTap?.invoke(draggedIndex)
-                                hapticEngine.performHaptic(HapticCue.TICK)
-                            }
-                        } else if (abs(totalDragX) > abs(totalDragY) && abs(totalDragX) > 24f && draggedIndex in 0 until itemCount) {
-                            // Horizontal drag-swap
-                            val targetIndex = ArrayCanvasLayoutCalculator.calculateIndexFromX(
-                                touchX = horizontalPaddingPx + (draggedIndex + 0.5f) * ((size.width - 2f * horizontalPaddingPx) / itemCount) + totalDragX,
-                                itemCount = itemCount,
-                                canvasWidth = size.width.toFloat(),
-                                horizontalPadding = horizontalPaddingPx
-                            )
-                            if (targetIndex != draggedIndex && targetIndex in 0 until itemCount) {
-                                onSwap?.invoke(draggedIndex, targetIndex)
-                                hapticEngine.performHaptic(HapticCue.SWAP_THUD)
-                            }
-                        }
-                        draggedIndex = -1
-                    },
-                    onDragCancel = {
-                        draggedIndex = -1
                     }
-                )
+                }
             }
     ) {
         if (itemCount == 0) return@Canvas
