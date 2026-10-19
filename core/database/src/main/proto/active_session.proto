@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "com.unravel.core.database.model";
+option java_multiple_files = true;
+
+message ActiveSessionPreferences {
+    string algorithm_id = 1;
+    int32 step_index = 2;
+    float playback_speed = 3;
+    string dataset_json = 4;
+    int64 timestamp_epoch_ms = 5;
+}
