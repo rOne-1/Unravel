@@ -127,9 +127,26 @@ fun SandboxContent(
                     ArrayPointerCanvas(
                         arrayState = structure,
                         modifier = Modifier.fillMaxSize(),
+                        onValueChange = { index, newValue ->
+                            if (state.sandboxMode == SandboxMode.DIRECT_EDIT) {
+                                onIntent(SandboxIntent.DirectEditArrayValue(index, newValue))
+                            }
+                        },
+                        onBarTap = { index ->
+                            if (state.sandboxMode == SandboxMode.CHALLENGE_BE_THE_ALGO) {
+                                val expected = state.currentFrame.expectedUserAction
+                                if (expected is ExpectedAction.MovePointer) {
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.MovePointer(expected.pointerName, index)))
+                                } else if (expected is ExpectedAction.KeepAndAdvance) {
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.KeepAndAdvance))
+                                }
+                            }
+                        },
                         onSwap = { a, b ->
                             if (state.sandboxMode == SandboxMode.CHALLENGE_BE_THE_ALGO) {
                                 onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.SwapIndices(a, b)))
+                            } else if (state.sandboxMode == SandboxMode.DIRECT_EDIT) {
+                                onIntent(SandboxIntent.DirectEditSwap(a, b))
                             }
                         }
                     )
@@ -140,7 +157,15 @@ fun SandboxContent(
                         modifier = Modifier.fillMaxSize(),
                         onNodeTap = { nodeId ->
                             if (state.sandboxMode == SandboxMode.CHALLENGE_BE_THE_ALGO) {
-                                onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.SelectBranch(nodeId)))
+                                val expected = state.currentFrame.expectedUserAction
+                                if (expected is ExpectedAction.MovePointer) {
+                                    val nodeIdx = structure.nodes.indexOfFirst { it.id.toString() == nodeId }
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.MovePointer(expected.pointerName, nodeIdx)))
+                                } else if (expected is ExpectedAction.RewirePointer) {
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.RewirePointer(expected.fromNodeId, nodeId)))
+                                } else {
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.SelectBranch(nodeId)))
+                                }
                             }
                         }
                     )
@@ -151,7 +176,12 @@ fun SandboxContent(
                         modifier = Modifier.fillMaxSize(),
                         onNodeTap = { nodeId ->
                             if (state.sandboxMode == SandboxMode.CHALLENGE_BE_THE_ALGO) {
-                                onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.SelectBranch(nodeId)))
+                                val expected = state.currentFrame.expectedUserAction
+                                if (expected is ExpectedAction.RotateSubtree) {
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.RotateSubtree(nodeId, expected.direction)))
+                                } else {
+                                    onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.SelectBranch(nodeId)))
+                                }
                             }
                         }
                     )
@@ -160,6 +190,11 @@ fun SandboxContent(
                     SpatialGridGraphCanvas(
                         state = structure,
                         modifier = Modifier.fillMaxSize(),
+                        onCellTap = { row, col ->
+                            if (state.sandboxMode == SandboxMode.DIRECT_EDIT) {
+                                onIntent(SandboxIntent.ToggleGridObstacle(row, col))
+                            }
+                        },
                         onVertexTap = { vertexId ->
                             if (state.sandboxMode == SandboxMode.CHALLENGE_BE_THE_ALGO) {
                                 onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.ExpandFrontierNode(vertexId)))

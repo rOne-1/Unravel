@@ -43,4 +43,13 @@ sealed interface SandboxIntent {
 
     /** Saves current session checkpoint to persistence. */
     data object CheckpointSession : SandboxIntent
+
+    /** Dynamically alters the value of an array element in Direct Edit mode. */
+    data class DirectEditArrayValue(val index: Int, val newValue: Int) : SandboxIntent
+
+    /** Interactively swaps two elements in Direct Edit mode. */
+    data class DirectEditSwap(val indexA: Int, val indexB: Int) : SandboxIntent
+
+    /** Toggles an obstacle cell on a 2D spatial grid in Direct Edit mode. */
+    data class ToggleGridObstacle(val row: Int, val col: Int) : SandboxIntent
 }
