@@ -84,4 +84,63 @@ class ChallengeValidatorTest {
         val result = ChallengeValidator.validateAction(frame, ExpectedAction.KeepAndAdvance)
         assertTrue(result is ValidationResult.NoActionExpected)
     }
+
+    @Test
+    fun `rewire pointer validation succeeds on matching fromNodeId and newTargetNodeId`() {
+        val frame = createFrame(ExpectedAction.RewirePointer("node-A", "node-B"))
+
+        val validResult = ChallengeValidator.validateAction(frame, ExpectedAction.RewirePointer("node-A", "node-B"), nextFrameIndex = 5)
+        assertTrue(validResult is ValidationResult.Valid)
+        assertEquals(5, (validResult as ValidationResult.Valid).nextFrameIndex)
+
+        // Null target match
+        val nullFrame = createFrame(ExpectedAction.RewirePointer("node-A", null))
+        val validNull = ChallengeValidator.validateAction(nullFrame, ExpectedAction.RewirePointer("node-A", null))
+        assertTrue(validNull is ValidationResult.Valid)
+
+        // Mismatched target
+        val invalidResult = ChallengeValidator.validateAction(frame, ExpectedAction.RewirePointer("node-A", "node-C"))
+        assertTrue(invalidResult is ValidationResult.Invalid)
+        assertTrue((invalidResult as ValidationResult.Invalid).reason.contains("rewire"))
+    }
+
+    @Test
+    fun `select branch validation succeeds on matching targetNodeId`() {
+        val frame = createFrame(ExpectedAction.SelectBranch("node-left"))
+
+        val validResult = ChallengeValidator.validateAction(frame, ExpectedAction.SelectBranch("node-left"))
+        assertTrue(validResult is ValidationResult.Valid)
+
+        val invalidResult = ChallengeValidator.validateAction(frame, ExpectedAction.SelectBranch("node-right"))
+        assertTrue(invalidResult is ValidationResult.Invalid)
+    }
+
+    @Test
+    fun `rotate subtree validation matches pivotNodeId and rotation direction`() {
+        val frame = createFrame(ExpectedAction.RotateSubtree("pivot-1", com.unravel.core.engine.model.RotationDirection.LEFT))
+
+        val validResult = ChallengeValidator.validateAction(
+            frame,
+            ExpectedAction.RotateSubtree("pivot-1", com.unravel.core.engine.model.RotationDirection.LEFT)
+        )
+        assertTrue(validResult is ValidationResult.Valid)
+
+        val wrongDirResult = ChallengeValidator.validateAction(
+            frame,
+            ExpectedAction.RotateSubtree("pivot-1", com.unravel.core.engine.model.RotationDirection.RIGHT)
+        )
+        assertTrue(wrongDirResult is ValidationResult.Invalid)
+    }
+
+    @Test
+    fun `expand frontier node validation matches target vertexId`() {
+        val frame = createFrame(ExpectedAction.ExpandFrontierNode("vertex-(2,3)"))
+
+        val validResult = ChallengeValidator.validateAction(frame, ExpectedAction.ExpandFrontierNode("vertex-(2,3)"))
+        assertTrue(validResult is ValidationResult.Valid)
+
+        val invalidResult = ChallengeValidator.validateAction(frame, ExpectedAction.ExpandFrontierNode("vertex-(0,0)"))
+        assertTrue(invalidResult is ValidationResult.Invalid)
+        assertTrue((invalidResult as ValidationResult.Invalid).reason.contains("vertex-(2,3)"))
+    }
 }
