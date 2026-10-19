@@ -5,6 +5,7 @@ import com.unravel.core.database.model.ActiveSessionPreferences
 import com.unravel.core.database.repository.SessionRepository
 import com.unravel.core.engine.model.AlgorithmId
 import com.unravel.core.engine.model.ExpectedAction
+import com.unravel.core.engine.model.VisualStructureState
 import com.unravel.feature.sandbox.model.SandboxIntent
 import com.unravel.feature.sandbox.model.SandboxMode
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -252,5 +253,48 @@ class SandboxViewModelTest {
         assertEquals(3, state.currentFrameIndex)
         assertEquals(1.5f, state.playbackSpeed)
         assertEquals(3, state.currentFrame?.stepIndex)
+    }
+
+    @Test
+    @DisplayName("WP-45: DirectEditArrayValue dynamically updates bar value and regenerates frames")
+    fun testDirectEditArrayValue() = runTest {
+        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val viewModel = SandboxViewModel(
+            initialAlgorithmId = AlgorithmId.BUBBLE_SORT,
+            dispatcher = testDispatcher
+        )
+
+        viewModel.processIntent(SandboxIntent.SetMode(SandboxMode.DIRECT_EDIT))
+        assertEquals(SandboxMode.DIRECT_EDIT, viewModel.uiState.value.sandboxMode)
+
+        // Modify index 0 to value 88
+        viewModel.processIntent(SandboxIntent.DirectEditArrayValue(index = 0, newValue = 88))
+        val state = viewModel.uiState.value
+        val structure = state.currentFrame?.structureState as VisualStructureState.ArrayState
+        assertEquals(88, structure.items[0].value)
+        assertEquals(0, state.currentFrameIndex)
+        assertTrue(state.totalFrames > 0)
+    }
+
+    @Test
+    @DisplayName("WP-45: DirectEditSwap interactively swaps two elements and regenerates frames")
+    fun testDirectEditSwap() = runTest {
+        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val viewModel = SandboxViewModel(
+            initialAlgorithmId = AlgorithmId.BUBBLE_SORT,
+            dispatcher = testDispatcher
+        )
+
+        viewModel.processIntent(SandboxIntent.SetMode(SandboxMode.DIRECT_EDIT))
+
+        val initialStructure = viewModel.uiState.value.currentFrame?.structureState as VisualStructureState.ArrayState
+        val val0 = initialStructure.items[0].value
+        val val1 = initialStructure.items[1].value
+
+        viewModel.processIntent(SandboxIntent.DirectEditSwap(indexA = 0, indexB = 1))
+        val postSwapStructure = viewModel.uiState.value.currentFrame?.structureState as VisualStructureState.ArrayState
+        assertEquals(val1, postSwapStructure.items[0].value)
+        assertEquals(val0, postSwapStructure.items[1].value)
+        assertEquals(0, viewModel.uiState.value.currentFrameIndex)
     }
 }

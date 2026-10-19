@@ -205,69 +205,61 @@ object AlgorithmCatalog {
         }
     }
 
+    /**
+     * Generates algorithm frames starting from an explicit custom visual structure state.
+     */
+    fun generateFramesWithCustomState(
+        algorithmId: AlgorithmId,
+        initialState: VisualStructureState
+    ): ImmutableList<AlgorithmFrame> {
+        val generator = createGenerator(algorithmId)
+        @Suppress("UNCHECKED_CAST")
+        val typedGenerator = generator as AlgorithmGenerator<VisualStructureState>
+        return typedGenerator.generateFrames(initialState)
+    }
+
+    fun createGenerator(algorithmId: AlgorithmId): AlgorithmGenerator<*> {
+        return when (algorithmId) {
+            AlgorithmId.TWO_POINTERS -> TwoPointersGenerator()
+            AlgorithmId.SLIDING_WINDOW -> SlidingWindowGenerator()
+            AlgorithmId.BINARY_SEARCH -> BinarySearchGenerator()
+            AlgorithmId.BUBBLE_SORT -> BubbleSortGenerator()
+            AlgorithmId.INSERTION_SORT -> InsertionSortGenerator()
+            AlgorithmId.MERGE_SORT -> MergeSortGenerator()
+            AlgorithmId.QUICK_SORT -> QuickSortGenerator()
+            AlgorithmId.LINKED_LIST_REVERSAL -> LinkedListReversalGenerator()
+            AlgorithmId.FLOYD_CYCLE -> FloydCycleGenerator()
+            AlgorithmId.STACK_QUEUE_LIFO_FIFO -> StackQueueGenerator()
+            AlgorithmId.BST_OPERATIONS -> BstOperationsGenerator()
+            AlgorithmId.AVL_ROTATIONS -> AvlRotationsGenerator()
+            AlgorithmId.GRAPH_BFS_DFS -> GraphBfsDfsGenerator(useDfs = false)
+            AlgorithmId.DIJKSTRA_ASTAR -> DijkstraAStarGenerator(useAStar = true)
+        }
+    }
+
     private fun createGeneratorAndState(
         algorithmId: AlgorithmId,
         preset: InputPreset,
         arraySize: Int,
         seed: Long?
     ): Pair<AlgorithmGenerator<*>, VisualStructureState> {
-        return when (algorithmId) {
-            AlgorithmId.TWO_POINTERS -> Pair(
-                TwoPointersGenerator(),
-                InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
-            )
-            AlgorithmId.SLIDING_WINDOW -> Pair(
-                SlidingWindowGenerator(),
-                InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
-            )
-            AlgorithmId.BINARY_SEARCH -> Pair(
-                BinarySearchGenerator(),
-                InputPresetGenerator.generateInitialState(InputPreset.NEARLY_SORTED, size = arraySize, seed = seed)
-            )
-            AlgorithmId.BUBBLE_SORT -> Pair(
-                BubbleSortGenerator(),
-                InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
-            )
-            AlgorithmId.INSERTION_SORT -> Pair(
-                InsertionSortGenerator(),
-                InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
-            )
-            AlgorithmId.MERGE_SORT -> Pair(
-                MergeSortGenerator(),
-                InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
-            )
-            AlgorithmId.QUICK_SORT -> Pair(
-                QuickSortGenerator(),
-                InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
-            )
-            AlgorithmId.LINKED_LIST_REVERSAL -> Pair(
-                LinkedListReversalGenerator(),
-                InputPresetGenerator.generateLinkedListState(listOf(12, 24, 36, 48, 60))
-            )
-            AlgorithmId.FLOYD_CYCLE -> Pair(
-                FloydCycleGenerator(),
-                InputPresetGenerator.generateLinkedListState(listOf(10, 20, 30, 40, 50, 60, 70), cycleEntryIndex = 3)
-            )
-            AlgorithmId.STACK_QUEUE_LIFO_FIFO -> Pair(
-                StackQueueGenerator(),
-                InputPresetGenerator.generateLinkedListState(listOf(5, 15, 25, 35))
-            )
-            AlgorithmId.BST_OPERATIONS -> Pair(
-                BstOperationsGenerator(),
-                VisualStructureState.HierarchyTreeState(nodes = persistentListOf())
-            )
-            AlgorithmId.AVL_ROTATIONS -> Pair(
-                AvlRotationsGenerator(),
-                VisualStructureState.HierarchyTreeState(nodes = persistentListOf())
-            )
-            AlgorithmId.GRAPH_BFS_DFS -> Pair(
-                GraphBfsDfsGenerator(useDfs = false),
-                GraphLayoutEngine.layoutGrid(rows = 3, cols = 4, obstacles = setOf(Pair(1, 1), Pair(1, 2)))
-            )
-            AlgorithmId.DIJKSTRA_ASTAR -> Pair(
-                DijkstraAStarGenerator(useAStar = true),
-                GraphLayoutEngine.layoutGrid(rows = 4, cols = 4, obstacles = setOf(Pair(1, 1), Pair(2, 2)))
-            )
+        val generator = createGenerator(algorithmId)
+        val initialState = when (algorithmId) {
+            AlgorithmId.TWO_POINTERS -> InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
+            AlgorithmId.SLIDING_WINDOW -> InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
+            AlgorithmId.BINARY_SEARCH -> InputPresetGenerator.generateInitialState(InputPreset.NEARLY_SORTED, size = arraySize, seed = seed)
+            AlgorithmId.BUBBLE_SORT -> InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
+            AlgorithmId.INSERTION_SORT -> InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
+            AlgorithmId.MERGE_SORT -> InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
+            AlgorithmId.QUICK_SORT -> InputPresetGenerator.generateInitialState(preset, size = arraySize, seed = seed)
+            AlgorithmId.LINKED_LIST_REVERSAL -> InputPresetGenerator.generateLinkedListState(listOf(12, 24, 36, 48, 60))
+            AlgorithmId.FLOYD_CYCLE -> InputPresetGenerator.generateLinkedListState(listOf(10, 20, 30, 40, 50, 60, 70), cycleEntryIndex = 3)
+            AlgorithmId.STACK_QUEUE_LIFO_FIFO -> InputPresetGenerator.generateLinkedListState(listOf(5, 15, 25, 35))
+            AlgorithmId.BST_OPERATIONS -> VisualStructureState.HierarchyTreeState(nodes = persistentListOf())
+            AlgorithmId.AVL_ROTATIONS -> VisualStructureState.HierarchyTreeState(nodes = persistentListOf())
+            AlgorithmId.GRAPH_BFS_DFS -> GraphLayoutEngine.layoutGrid(rows = 3, cols = 4, obstacles = setOf(Pair(1, 1), Pair(1, 2)))
+            AlgorithmId.DIJKSTRA_ASTAR -> GraphLayoutEngine.layoutGrid(rows = 4, cols = 4, obstacles = setOf(Pair(1, 1), Pair(2, 2)))
         }
+        return Pair(generator, initialState)
     }
 }

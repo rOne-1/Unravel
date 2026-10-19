@@ -6,12 +6,15 @@ import com.unravel.core.database.model.ActiveSessionPreferences
 import com.unravel.core.database.repository.SessionRepository
 import com.unravel.core.engine.generator.InputPreset
 import com.unravel.core.engine.model.AlgorithmId
+import com.unravel.core.engine.model.VisualStructureState
 import com.unravel.core.engine.validator.ChallengeValidator
 import com.unravel.core.engine.validator.ValidationResult
 import com.unravel.feature.sandbox.engine.AlgorithmCatalog
 import com.unravel.feature.sandbox.model.SandboxIntent
 import com.unravel.feature.sandbox.model.SandboxMode
 import com.unravel.feature.sandbox.model.SandboxUiState
+import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -105,6 +108,8 @@ class SandboxViewModel(
             is SandboxIntent.ResetDataset -> resetDataset(intent.preset)
             is SandboxIntent.SelectAlgorithm -> selectAlgorithm(intent.algorithmId)
             SandboxIntent.CheckpointSession -> checkpointSession()
+            is SandboxIntent.DirectEditArrayValue -> directEditArrayValue(intent.index, intent.newValue)
+            is SandboxIntent.DirectEditSwap -> directEditSwap(intent.indexA, intent.indexB)
         }
     }
 
@@ -315,6 +320,65 @@ class SandboxViewModel(
                     playbackSpeed = state.playbackSpeed,
                     timestampEpochMs = System.currentTimeMillis()
                 )
+            )
+        }
+    }
+
+    private fun directEditArrayValue(index: Int, newValue: Int) {
+        pausePlayback()
+        val currentStructure = (_uiState.value.frames.firstOrNull()?.structureState as? VisualStructureState.ArrayState)
+            ?: (_uiState.value.currentFrame?.structureState as? VisualStructureState.ArrayState)
+            ?: return
+        if (index !in 0 until currentStructure.items.size) return
+
+        val newItems = currentStructure.items.toMutableList()
+        newItems[index] = newItems[index].copy(value = newValue.coerceIn(1, 99))
+        val newInitialState = currentStructure.copy(
+            items = newItems.toImmutableList(),
+            activeIndices = persistentSetOf(),
+            mutatingIndices = persistentSetOf(),
+            sortedIndices = persistentSetOf(),
+            discardedRange = null
+        )
+        val newFrames = AlgorithmCatalog.generateFramesWithCustomState(_uiState.value.algorithmId, newInitialState)
+        _uiState.update { state ->
+            state.copy(
+                currentFrameIndex = 0,
+                totalFrames = newFrames.size,
+                currentFrame = newFrames.firstOrNull(),
+                frames = newFrames,
+                isPlaying = false
+            )
+        }
+    }
+
+    private fun directEditSwap(indexA: Int, indexB: Int) {
+        pausePlayback()
+        val currentStructure = (_uiState.value.frames.firstOrNull()?.structureState as? VisualStructureState.ArrayState)
+            ?: (_uiState.value.currentFrame?.structureState as? VisualStructureState.ArrayState)
+            ?: return
+        if (indexA !in 0 until currentStructure.items.size || indexB !in 0 until currentStructure.items.size) return
+        if (indexA == indexB) return
+
+        val newItems = currentStructure.items.toMutableList()
+        val temp = newItems[indexA]
+        newItems[indexA] = newItems[indexB]
+        newItems[indexB] = temp
+        val newInitialState = currentStructure.copy(
+            items = newItems.toImmutableList(),
+            activeIndices = persistentSetOf(),
+            mutatingIndices = persistentSetOf(),
+            sortedIndices = persistentSetOf(),
+            discardedRange = null
+        )
+        val newFrames = AlgorithmCatalog.generateFramesWithCustomState(_uiState.value.algorithmId, newInitialState)
+        _uiState.update { state ->
+            state.copy(
+                currentFrameIndex = 0,
+                totalFrames = newFrames.size,
+                currentFrame = newFrames.firstOrNull(),
+                frames = newFrames,
+                isPlaying = false
             )
         }
     }
