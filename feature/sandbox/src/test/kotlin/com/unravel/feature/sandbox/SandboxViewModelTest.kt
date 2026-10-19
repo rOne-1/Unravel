@@ -297,4 +297,29 @@ class SandboxViewModelTest {
         assertEquals(val0, postSwapStructure.items[1].value)
         assertEquals(0, viewModel.uiState.value.currentFrameIndex)
     }
+
+    @Test
+    @DisplayName("WP-46: ToggleGridObstacle toggles wall obstacle and regenerates pathfinding sequence")
+    fun testToggleGridObstacle() = runTest {
+        val testDispatcher = StandardTestDispatcher(testScheduler)
+        val viewModel = SandboxViewModel(
+            initialAlgorithmId = AlgorithmId.GRAPH_BFS_DFS,
+            dispatcher = testDispatcher
+        )
+
+        viewModel.processIntent(SandboxIntent.SetMode(SandboxMode.DIRECT_EDIT))
+
+        // In 3x4 grid: cell (1, 1) was initially an obstacle
+        val initialStructure = viewModel.uiState.value.currentFrame?.structureState as VisualStructureState.SpatialGridGraphState
+        val cell11Initial = initialStructure.vertices.first { it.gridRow == 1 && it.gridCol == 1 }
+        assertTrue(cell11Initial.isObstacle)
+
+        // Toggle obstacle off at (1, 1)
+        viewModel.processIntent(SandboxIntent.ToggleGridObstacle(row = 1, col = 1))
+        val postToggleStructure = viewModel.uiState.value.currentFrame?.structureState as VisualStructureState.SpatialGridGraphState
+        val cell11Post = postToggleStructure.vertices.first { it.gridRow == 1 && it.gridCol == 1 }
+        assertFalse(cell11Post.isObstacle)
+        assertEquals(0, viewModel.uiState.value.currentFrameIndex)
+        assertTrue(viewModel.uiState.value.totalFrames > 0)
+    }
 }

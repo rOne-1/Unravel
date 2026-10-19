@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.unravel.core.database.model.ActiveSessionPreferences
 import com.unravel.core.database.repository.SessionRepository
 import com.unravel.core.engine.generator.InputPreset
+import com.unravel.core.engine.layout.GraphLayoutEngine
 import com.unravel.core.engine.model.AlgorithmId
 import com.unravel.core.engine.model.VisualStructureState
 import com.unravel.core.engine.validator.ChallengeValidator
@@ -110,6 +111,7 @@ class SandboxViewModel(
             SandboxIntent.CheckpointSession -> checkpointSession()
             is SandboxIntent.DirectEditArrayValue -> directEditArrayValue(intent.index, intent.newValue)
             is SandboxIntent.DirectEditSwap -> directEditSwap(intent.indexA, intent.indexB)
+            is SandboxIntent.ToggleGridObstacle -> toggleGridObstacle(intent.row, intent.col)
         }
     }
 
@@ -371,6 +373,47 @@ class SandboxViewModel(
             sortedIndices = persistentSetOf(),
             discardedRange = null
         )
+        val newFrames = AlgorithmCatalog.generateFramesWithCustomState(_uiState.value.algorithmId, newInitialState)
+        _uiState.update { state ->
+            state.copy(
+                currentFrameIndex = 0,
+                totalFrames = newFrames.size,
+                currentFrame = newFrames.firstOrNull(),
+                frames = newFrames,
+                isPlaying = false
+            )
+        }
+    }
+
+    private fun toggleGridObstacle(row: Int, col: Int) {
+        pausePlayback()
+        val currentStructure = (_uiState.value.frames.firstOrNull()?.structureState as? VisualStructureState.SpatialGridGraphState)
+            ?: (_uiState.value.currentFrame?.structureState as? VisualStructureState.SpatialGridGraphState)
+            ?: return
+        val rows = (currentStructure.vertices.maxOfOrNull { it.gridRow } ?: 0) + 1
+        val cols = (currentStructure.vertices.maxOfOrNull { it.gridCol } ?: 0) + 1
+        if (row !in 0 until rows || col !in 0 until cols) return
+
+        val startVertex = currentStructure.vertices.firstOrNull { it.id.toString() == currentStructure.startVertexId }
+        val targetVertex = currentStructure.vertices.firstOrNull { it.id.toString() == currentStructure.targetVertexId }
+        if ((startVertex?.gridRow == row && startVertex.gridCol == col) || (targetVertex?.gridRow == row && targetVertex.gridCol == col)) return
+
+        val currentObstacles = currentStructure.vertices.filter { it.isObstacle }.map { Pair(it.gridRow, it.gridCol) }.toMutableSet()
+        val coord = Pair(row, col)
+        if (currentObstacles.contains(coord)) {
+            currentObstacles.remove(coord)
+        } else {
+            currentObstacles.add(coord)
+        }
+
+        val newInitialState = GraphLayoutEngine.layoutGrid(
+            rows = rows,
+            cols = cols,
+            obstacles = currentObstacles,
+            startCoord = Pair(startVertex?.gridRow ?: 0, startVertex?.gridCol ?: 0),
+            targetCoord = Pair(targetVertex?.gridRow ?: (rows - 1), targetVertex?.gridCol ?: (cols - 1))
+        )
+
         val newFrames = AlgorithmCatalog.generateFramesWithCustomState(_uiState.value.algorithmId, newInitialState)
         _uiState.update { state ->
             state.copy(

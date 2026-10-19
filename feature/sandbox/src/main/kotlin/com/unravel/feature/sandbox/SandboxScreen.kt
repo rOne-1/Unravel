@@ -190,6 +190,11 @@ fun SandboxContent(
                     SpatialGridGraphCanvas(
                         state = structure,
                         modifier = Modifier.fillMaxSize(),
+                        onCellTap = { row, col ->
+                            if (state.sandboxMode == SandboxMode.DIRECT_EDIT) {
+                                onIntent(SandboxIntent.ToggleGridObstacle(row, col))
+                            }
+                        },
                         onVertexTap = { vertexId ->
                             if (state.sandboxMode == SandboxMode.CHALLENGE_BE_THE_ALGO) {
                                 onIntent(SandboxIntent.SubmitChallengeAction(ExpectedAction.ExpandFrontierNode(vertexId)))

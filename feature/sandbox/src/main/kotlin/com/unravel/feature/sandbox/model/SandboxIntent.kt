@@ -49,4 +49,7 @@ sealed interface SandboxIntent {
 
     /** Interactively swaps two elements in Direct Edit mode. */
     data class DirectEditSwap(val indexA: Int, val indexB: Int) : SandboxIntent
+
+    /** Toggles an obstacle cell on a 2D spatial grid in Direct Edit mode. */
+    data class ToggleGridObstacle(val row: Int, val col: Int) : SandboxIntent
 }
