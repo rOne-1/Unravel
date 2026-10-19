@@ -84,4 +84,35 @@ object InputPresetGenerator {
     ): VisualStructureState.ArrayState {
         return VisualStructureState.ArrayState(items = generateNodes(preset, size, seed))
     }
+
+    @OptIn(ExperimentalUuidApi::class)
+    fun generateLinkedListState(
+        values: List<Int>,
+        cycleEntryIndex: Int? = null
+    ): VisualStructureState.LinkedNodeState {
+        if (values.isEmpty()) {
+            return VisualStructureState.LinkedNodeState(nodes = kotlinx.collections.immutable.persistentListOf())
+        }
+        val ids = values.map { Uuid.random() }
+        val nodes = values.indices.map { i ->
+            val nextId = when {
+                i == values.lastIndex -> cycleEntryIndex?.let { ids[it] }
+                else -> ids[i + 1]
+            }
+            val prevId = if (i > 0) ids[i - 1] else null
+            com.unravel.core.engine.model.LinkedNode(
+                id = ids[i],
+                value = values[i],
+                nextId = nextId,
+                prevId = prevId
+            )
+        }.toImmutableList()
+
+        val pointers = kotlinx.collections.immutable.persistentMapOf("head" to ids.first().toString())
+        return VisualStructureState.LinkedNodeState(
+            nodes = nodes,
+            pointers = pointers,
+            isCycleDetected = false
+        )
+    }
 }

@@ -53,7 +53,9 @@ class FrameAccumulator(
 
         val allocated = when (structureState) {
             is VisualStructureState.ArrayState -> structureState.items.size + structureState.auxiliaryItems.size
-            else -> 0
+            is VisualStructureState.LinkedNodeState -> structureState.nodes.size
+            is VisualStructureState.HierarchyTreeState -> structureState.nodes.size
+            is VisualStructureState.SpatialGridGraphState -> structureState.vertices.size
         }
 
         frames.add(
