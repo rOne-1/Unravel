@@ -46,7 +46,12 @@ fun UnravelNavHost(
     val effectiveDao: SkillNodeDao = skillNodeDao ?: remember(context) { AppContainer.getSkillNodeDao(context) }
     val effectiveSessionRepo: SessionRepository = sessionRepository ?: remember(context) { AppContainer.getSessionRepository(context) }
 
-    val backStack = rememberNavBackStack(initialRoute)
+    val backStack = rememberNavBackStack(SkillMapRoute)
+    androidx.compose.runtime.LaunchedEffect(initialRoute) {
+        if (initialRoute != SkillMapRoute && backStack.lastOrNull() != initialRoute) {
+            backStack.add(initialRoute)
+        }
+    }
 
     // Handle back button / predictive back gesture
     val canPop = backStack.size > 1
