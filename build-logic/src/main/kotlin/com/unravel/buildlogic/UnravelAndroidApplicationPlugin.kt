@@ -28,6 +28,25 @@ class UnravelAndroidApplicationPlugin : Plugin<Project> {
                 testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
             }
 
+            signingConfigs {
+                create("beta") {
+                    val betaKeystore = rootProject.file("signing/unravel-beta.keystore")
+                    storeFile = betaKeystore
+                    storePassword = (findProperty("unravel.beta.storePassword") as? String)
+                        ?: System.getenv("UNRAVEL_BETA_STORE_PASSWORD")
+                        ?: "unravel2026"
+                    keyAlias = (findProperty("unravel.beta.keyAlias") as? String)
+                        ?: System.getenv("UNRAVEL_BETA_KEY_ALIAS")
+                        ?: "unravelBeta"
+                    keyPassword = (findProperty("unravel.beta.keyPassword") as? String)
+                        ?: System.getenv("UNRAVEL_BETA_KEY_PASSWORD")
+                        ?: "unravel2026"
+                    enableV1Signing = true
+                    enableV2Signing = true
+                    enableV3Signing = true
+                }
+            }
+
             buildTypes {
                 release {
                     isMinifyEnabled = true
@@ -36,7 +55,7 @@ class UnravelAndroidApplicationPlugin : Plugin<Project> {
                         getDefaultProguardFile("proguard-android-optimize.txt"),
                         "proguard-rules.pro"
                     )
-                    signingConfig = signingConfigs.getByName("debug")
+                    signingConfig = signingConfigs.getByName("beta")
                 }
                 debug {
                     applicationIdSuffix = ".debug"
